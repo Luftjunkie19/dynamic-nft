@@ -8,7 +8,7 @@ import {Base64} from "../lib/openzeppelin-contracts/contracts/utils/Base64.sol";
 import {console} from "../lib/forge-std/src/Console.sol";
 import {IERC721} from "../lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 
-contract DynamicNFT is ERC721, ERC721URIStorage, Ownable {
+contract DynamicNFT is ERC721, Ownable, ERC721URIStorage {
     //Errors
     error NotTokenOwner(address tokenOwner);
     error DynamicNFT_NotElligibleToMint(address minter);
@@ -36,15 +36,10 @@ contract DynamicNFT is ERC721, ERC721URIStorage, Ownable {
     uint256 private _tokenIdCounter; // Total number of tokens minted
     uint256 private _collectionCounter; // Total number of collections
 
-    address private _owner; // Contract owner
-
     constructor(
         string memory _name,
-        string memory _symbol,
-        address initialOwner
-    ) ERC721(_name, _symbol) Ownable(initialOwner) {
-        _owner = initialOwner;
-    }
+        string memory _symbol
+    ) Ownable(msg.sender) ERC721(_name, _symbol) {}
 
     function createCollection() external {
         _collectionCounter++;
@@ -55,11 +50,15 @@ contract DynamicNFT is ERC721, ERC721URIStorage, Ownable {
     }
 
     function getContractsOwner() public view returns (address) {
-        return _owner;
+        return owner();
+    }
+
+    function totalSupply() public view returns (uint256) {
+        return _tokenIdCounter;
     }
 
     modifier isElligible(address minter) {
-        if (_owner != minter && minter != address(0)) {
+        if (getContractsOwner() == minter && minter != address(0)) {
             revert DynamicNFT_NotElligibleToMint(minter);
         }
         _;
@@ -87,7 +86,7 @@ contract DynamicNFT is ERC721, ERC721URIStorage, Ownable {
         uint256 collectionId,
         string[5] memory keys,
         string[5] memory values
-    ) external isElligible(msg.sender) {
+    ) external {
         _tokenIdCounter++;
         uint256 tokenId = _tokenIdCounter;
 
