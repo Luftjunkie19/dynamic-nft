@@ -27,6 +27,7 @@ contract TestDynamicNFT is Test {
     }
 
     function testUpdateTokenURI() public {
+        vm.prank(msg.sender);
         dynamicNFT.updateTokenURI(0, msg.sender, "data://");
     }
 

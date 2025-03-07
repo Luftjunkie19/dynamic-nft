@@ -10,6 +10,7 @@ import {console} from "../lib/forge-std/src/Console.sol";
 contract DynamicNFT is ERC721, ERC721URIStorage, Ownable {
     error NotTokenOwner(address tokenOwner);
     error DynamicNFT_NotElligibleToMint(address minter);
+    error DynamicNFT_AddressZero();
 
     event NFTMinted(address minter, uint256 tokenId, string tokenURI);
 
@@ -34,8 +35,8 @@ contract DynamicNFT is ERC721, ERC721URIStorage, Ownable {
         return _owner;
     }
 
-    modifier isElligible(address minter) {
-        if (_owner != minter && minter != address(0)) {
+    modifier isElligible(address minter, uint256 _tokenId) {
+        if (_tokenOwners[_tokenId] == minter && minter != address(0)) {
             revert DynamicNFT_NotElligibleToMint(minter);
         }
         _;
@@ -44,7 +45,7 @@ contract DynamicNFT is ERC721, ERC721URIStorage, Ownable {
     function mintNFT(
         address minter,
         string memory _tokenURI
-    ) external isElligible(minter) {
+    ) external onlyOwner  {
         uint256 tokenId = _tokenIdCounter;
         _safeMint(minter, tokenId);
         _setTokenURI(tokenId, _tokenURI);
@@ -59,12 +60,16 @@ contract DynamicNFT is ERC721, ERC721URIStorage, Ownable {
         uint256 tokenId,
         address updater,
         string memory newTokenURI
-    ) external isElligible(updater) {
+    ) external isElligible(updater, tokenId) {
         console.log(getTokenOwner(tokenId), "token owner");
         console.log(updater, "updater");
-        if (getTokenOwner(tokenId) != updater) {
-            revert NotTokenOwner(updater);
+        
+        if (updater == 0x0000000000000000000000000000000000000000) {
+            revert DynamicNFT_AddressZero();
         }
+        
+     
+
         _setTokenURI(tokenId, newTokenURI);
     }
 
