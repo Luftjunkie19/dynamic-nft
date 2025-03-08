@@ -6,6 +6,7 @@ import {ERC721URIStorage} from "../lib/openzeppelin-contracts/contracts/token/ER
 import {Ownable} from "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import {Base64} from "../lib/openzeppelin-contracts/contracts/utils/Base64.sol";
 import {console} from "../lib/forge-std/src/Console.sol";
+
 import {IERC721} from "../lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 
 contract DynamicNFT is ERC721, Ownable, ERC721URIStorage {
@@ -33,6 +34,7 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage {
     mapping(address => uint256[]) public ownerTokens; // List of tokens owned by a user
     mapping(address => mapping(address => bool)) public _operatorApprovals;
     mapping(uint256 => address) public _tokenApprovals;
+    mapping(uint256 => string) tokenIdToURI;
     uint256 private _tokenIdCounter; // Total number of tokens minted
     uint256 private _collectionCounter; // Total number of collections
 
@@ -90,11 +92,13 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage {
         _tokenIdCounter++;
         uint256 tokenId = _tokenIdCounter;
 
+        tokenIdToURI[tokenId] = _tokenURI;
         _safeMint(msg.sender, tokenId);
-        _setTokenURI(tokenId, _tokenURI);
+        super._setTokenURI(tokenId, _tokenURI);
 
         _tokenOwners[tokenId] = msg.sender;
         ownerTokens[msg.sender].push(tokenId);
+
 
         if (collectionId != 0) {
             tokenToCollection[tokenId] = collectionId;
@@ -214,11 +218,24 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage {
 
     function tokenURI(
         uint256 tokenId
-    ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+    ) public view override(ERC721, ERC721URIStorage) returns (string memory uriToken) {
+      uriToken =  super.tokenURI(tokenId);
+    }
+
+
+    function getTokenMetadata(
+        uint256 tokenId
+    ) public view returns (string memory) {
         string memory json = string(
             abi.encodePacked(
                 '{"name":"My NFT",',
                 '"description":"An awesome NFT",',
+                '"image":"',
+                tokenIdToURI[tokenId],
+                '",',
+                '"tokenId":"',
+                tokenId,
+                '",',
                 '"attributes": ['
             )
         );
@@ -245,9 +262,11 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage {
         return json;
     }
 
-    function supportsInterface(
+        function supportsInterface(
         bytes4 interfaceId
     ) public view override(ERC721, ERC721URIStorage) returns (bool) {
         return super.supportsInterface(interfaceId);
-    }
+    
+}
+    
 }
