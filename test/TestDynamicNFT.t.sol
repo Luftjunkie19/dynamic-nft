@@ -31,7 +31,7 @@ contract TestDynamicNFT is Test {
         values[3] = "100";
         values[4] = "100";
 
-        dynamicNFT.mintNFT("", 1, attributes, values);
+        dynamicNFT.mintNFT("", "", "", 1, attributes, values);
     }
 
     function testContractApproval() public {
