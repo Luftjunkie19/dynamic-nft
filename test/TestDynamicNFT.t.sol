@@ -31,7 +31,7 @@ contract TestDynamicNFT is Test {
         values[3] = "100";
         values[4] = "100";
 
-        dynamicNFT.mintNFT("", "", "", 1, attributes, values);
+        dynamicNFT.mintNFT("", "", "", attributes, values);
     }
 
     function testContractApproval() public {
@@ -46,24 +46,8 @@ contract TestDynamicNFT is Test {
         assertEq(tokenMinter, address(0));
     }
 
-    // function testUpdateTokenURI() public {
-    //     vm.prank(msg.sender);
-    //     dynamicNFT.updateTokenURI(0, msg.sender, "data://");
-    // }
-
-    function testCreateCollection() public {
-        dynamicNFT.createCollection();
-    }
-
     function testGetApproved() public view {
         dynamicNFT.getApproved(0);
-    }
-
-    function testGetCollection(uint256 collectionId) public view {
-        uint256[] memory collectionTokens = dynamicNFT.getCollectionTokens(
-            collectionId
-        );
-        assertEq(collectionTokens.length, 0);
     }
 
     function testIsApprovedForAll() public {
@@ -77,20 +61,6 @@ contract TestDynamicNFT is Test {
         assertEq(msg.sender, dynamicNFT.getContractsOwner());
     }
 
-    // function testApprove() public {
-    //     address userAddr = makeAddr("user");
-    //     vm.prank(userAddr);
-
-    //     dynamicNFT.mintNFT(
-    //         "",
-    //         0,
-    //         ["health", "attack", "defense", "stamina", "super-power"],
-    //         ["95", "75", "57", "86", "91"]
-    //     );
-
-    //     dynamicNFT.approve(userAddr, 0);
-    // }
-
     function test_GetTokenURI() public view {
         string memory tokenURI = dynamicNFT.tokenURI(0);
         assertEq(
@@ -98,12 +68,4 @@ contract TestDynamicNFT is Test {
             keccak256(abi.encode(tokenURI))
         );
     }
-
-    // function testSafeTransferFrom(
-    //     address from,
-    //     address to,
-    //     uint256 tokenId
-    // ) public {
-    //     dynamicNFT.safeTransferFrom(from, to, tokenId);
-    // }
 }

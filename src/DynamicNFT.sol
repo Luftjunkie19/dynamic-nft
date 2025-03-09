@@ -12,7 +12,9 @@ import {IERC721} from "../lib/openzeppelin-contracts/contracts/token/ERC721/IERC
 contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
     //Errors
     error NotTokenOwner(address tokenOwner);
+
     error DynamicNFT_NotElligibleToMint(address minter);
+
     error DynamicNFT_NotElligibleToUpdate(address minter, uint256 tokenId);
 
     //Events
@@ -46,16 +48,9 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
         Attribute[] attributes;
     }
 
-    //Mappings
-    mapping(uint256 => address) public collectionToOwner; // Which user created which collection?
-    mapping(address => uint256[]) public ownerCollections; // List of collections owned by a user
-
     mapping(address => mapping(uint256 => DynamicToken)) private userToTokenObj;
     mapping(uint256 => address) private _tokenOwners; // Which user owns which NFT?
 
-    mapping(uint256 => uint256) public tokenToCollection; // Which collection a token belongs to?
-    mapping(uint256 => mapping(string => string)) public tokenAttributes;
-    mapping(uint256 => string[]) public tokenAttributesKeys;
     mapping(address => uint256[]) public ownerTokens; // List of tokens owned by a user
     mapping(address => mapping(address => bool)) public _operatorApprovals;
 
@@ -64,7 +59,6 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
     mapping(uint256 => address) public _tokenApprovals;
     mapping(uint256 => string) tokenIdToTokenURI;
     uint256 private _tokenIdCounter; // Total number of tokens minted
-    uint256 private _collectionCounter; // Total number of collections
 
     constructor(
         string memory _name,
@@ -96,7 +90,7 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
     ) internal view returns (bool) {
         return (spender == ownerOf(tokenId) ||
             getApproved(tokenId) == spender ||
-            isApprovedForAll(ownerOf(tokenId), spender));
+            _isApprovedForAll(ownerOf(tokenId), spender));
     }
 
     function _isApprovedForAll(
@@ -106,20 +100,12 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
         return _operatorApprovals[_owner][operator];
     }
 
-    function isApprovedForAll(
-        address _tokenOwner,
-        address operator
-    ) public view override(ERC721, IERC721) returns (bool) {
-        return _isApprovedForAll(_tokenOwner, operator);
-    }
-
     // Main function created to enable anyone to mint his own NFT.
 
     function mintNFT(
         string memory _tokenURI,
         string memory _tokenImageURI,
         string memory description,
-        uint256 collectionId,
         string[5] memory keys,
         string[5] memory values
     ) external isElligible(msg.sender) {
@@ -135,10 +121,6 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
         _tokenOwners[tokenId] = msg.sender;
         ownerTokens[msg.sender].push(tokenId);
 
-        if (collectionId != 0) {
-            tokenToCollection[tokenId] = collectionId;
-        }
-
         userToTokenObj[msg.sender][tokenId] = DynamicToken({
             owner: msg.sender,
             tokenId: tokenId,
@@ -148,10 +130,7 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
             attributes: new Attribute[](0)
         });
 
-        tokenAttributesKeys[tokenId] = keys;
-
         for (uint256 i = 0; i < keys.length; i++) {
-            tokenAttributes[tokenId][keys[i]] = values[i];
             userToTokenObj[msg.sender][tokenId].attributes.push(
                 Attribute({trait_type: keys[i], value: values[i]})
             );
@@ -194,33 +173,8 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
         return ownerTotokenImageURI[addr][tokenId];
     }
 
-    function getCollectionTokens(
-        uint256 collectionId
-    ) external view returns (uint256[] memory) {
-        uint256[] memory result = new uint256[](_tokenIdCounter);
-        uint256 count = 0;
-
-        for (uint256 i = 1; i <= _tokenIdCounter; i++) {
-            if (tokenToCollection[i] == collectionId) {
-                result[count] = i;
-                count++;
-            }
-        }
-
-        return result;
-    }
-
     function getContractsOwner() public view returns (address) {
         return owner();
-    }
-
-    // Create collection
-    function createCollection() external {
-        _collectionCounter++;
-        uint256 collectionId = _collectionCounter;
-
-        collectionToOwner[collectionId] = msg.sender;
-        ownerCollections[msg.sender].push(collectionId);
     }
 
     // NFT Ownership State Management Functions (Transfer, Burn, Etc.)
@@ -229,10 +183,9 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
         address to,
         uint256 tokenId
     ) public virtual override(ERC721, IERC721) {
-        require(
-            _isApprovedOrOwner(msg.sender, tokenId),
-            "Not approved or owner"
-        );
+        if (!_isApprovedOrOwner(msg.sender, tokenId)) {
+            revert NotTokenOwner(msg.sender);
+        }
 
         DynamicToken memory token = userToTokenObj[from][tokenId];
 
@@ -266,12 +219,14 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
     ) public override(ERC721, IERC721) {
         address tokenOwner = ownerOf(tokenId);
         console.log(tokenOwner);
-        require(to != tokenOwner, "Can't approve yourself");
-        require(
-            msg.sender == tokenOwner ||
-                isApprovedForAll(tokenOwner, msg.sender),
-            "Not authorized"
-        );
+
+        if (
+            to != tokenOwner ||
+            msg.sender != tokenOwner ||
+            !_isApprovedForAll(tokenOwner, msg.sender)
+        ) {
+            revert NotTokenOwner(msg.sender);
+        }
 
         _approve(to, tokenId, msg.sender);
     }
@@ -281,7 +236,9 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
         address operator,
         bool approved
     ) public override(ERC721, IERC721) {
-        require(operator != msg.sender, "Can't approve yourself");
+        if (operator != msg.sender) {
+            revert NotTokenOwner(msg.sender);
+        }
 
         // Set the operator's approval status
         _operatorApprovals[msg.sender][operator] = approved;
@@ -303,8 +260,6 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
         address updater,
         string memory newTokenURI
     ) external isElligibleToUpdate(updater, tokenId) {
-        console.log(getTokenOwner(tokenId), "token owner");
-        console.log(updater, "updater");
         _setTokenURI(tokenId, newTokenURI);
 
         tokenIdToTokenURI[tokenId] = newTokenURI;
@@ -317,11 +272,9 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
     function tokenURI(
         uint256 tokenId
     ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
-        require(
-            _tokenOwners[tokenId] != address(0),
-            "ERC721Metadata: URI query for nonexistent token"
-        );
-
+        if (_tokenOwners[tokenId] != address(0)) {
+            revert ERC721NonexistentToken(tokenId);
+        }
         return super.tokenURI(tokenId);
     }
 
@@ -341,14 +294,7 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
         // Remove ownership mappings
         delete _tokenOwners[tokenId];
         delete tokenIdToTokenURI[tokenId];
-        delete tokenToCollection[tokenId];
         delete userToTokenObj[msg.sender][tokenId];
-
-        // Clear token attributes
-        delete tokenAttributesKeys[tokenId];
-        for (uint256 i = 0; i < tokenAttributesKeys[tokenId].length; i++) {
-            delete tokenAttributes[tokenId][tokenAttributesKeys[tokenId][i]];
-        }
 
         _burn(tokenId);
 
