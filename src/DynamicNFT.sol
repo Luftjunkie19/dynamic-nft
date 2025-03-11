@@ -40,6 +40,7 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
 
     struct Token {
         uint256 tokenId;
+        string tokenName;
         string tokenURI;
         string tokenImageURI;
         string description;
@@ -115,6 +116,7 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
     function mintNFT(
         string memory _tokenURI,
         string memory _tokenImageURI,
+        string memory tokenName,
         string memory description,
         string[5] memory keys,
         string[5] memory values
@@ -141,12 +143,14 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
             _tokenURI,
             _tokenImageURI,
             description,
+            tokenName,
             _tokenAttributes[tokenId]
         );
 
         _ownerToTokenStruct[msg.sender].push(
             Token(
                 tokenId,
+                tokenName,
                 _tokenURI,
                 _tokenImageURI,
                 description,
@@ -308,6 +312,14 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
         string memory newTokenURI
     ) external isElligibleToUpdate(updater, tokenId) {
         _setTokenURI(tokenId, newTokenURI);
+        _tokens[updater][tokenId].tokenURI = newTokenURI;
+
+        for (uint256 i = 0; i < _ownerToTokenStruct[updater].length; i++) {
+            if (_ownerToTokenStruct[updater][i].tokenId == tokenId) {
+                _ownerToTokenStruct[updater][i].tokenURI = newTokenURI;
+                break;
+            }
+        }
 
         emit NFTUpdated(updater, tokenId, newTokenURI);
     }

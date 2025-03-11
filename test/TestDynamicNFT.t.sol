@@ -27,6 +27,7 @@ contract TestDynamicNFT is Test {
         dynamicNFT.mintNFT(
             "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
             "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "Cool_NFT",
             "This is a coolish description",
             ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
             ["74", "97", "83", "96", "86"]
@@ -39,6 +40,7 @@ contract TestDynamicNFT is Test {
         dynamicNFT.mintNFT(
             "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
             "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "Cool_NFT",
             "This is a coolish description",
             ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
             ["74", "97", "83", "96", "86"]
@@ -53,6 +55,7 @@ contract TestDynamicNFT is Test {
         dynamicNFT.mintNFT(
             "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
             "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "Cool_NFT",
             "This is a coolish description",
             ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
             ["74", "97", "83", "96", "86"]
@@ -67,6 +70,7 @@ contract TestDynamicNFT is Test {
         dynamicNFT.mintNFT(
             "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
             "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "Cool_NFT",
             "This is a coolish description",
             ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
             ["74", "97", "83", "96", "86"]
@@ -81,6 +85,7 @@ contract TestDynamicNFT is Test {
         dynamicNFT.mintNFT(
             "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
             "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "Cool_NFT",
             "This is a coolish description",
             ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
             ["74", "97", "83", "96", "86"]
@@ -96,6 +101,7 @@ contract TestDynamicNFT is Test {
         dynamicNFT.mintNFT(
             "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
             "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "Cool_NFT",
             "This is a coolish description",
             ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
             ["74", "97", "83", "96", "86"]
@@ -109,6 +115,7 @@ contract TestDynamicNFT is Test {
         dynamicNFT.mintNFT(
             "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
             "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "Cool_NFT",
             "This is a coolish description",
             ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
             ["74", "97", "83", "96", "86"]
@@ -130,6 +137,7 @@ contract TestDynamicNFT is Test {
         dynamicNFT.mintNFT(
             "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
             "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "Cool_NFT",
             "This is a coolish description",
             ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
             ["74", "97", "83", "96", "86"]
@@ -143,6 +151,7 @@ contract TestDynamicNFT is Test {
         dynamicNFT.mintNFT(
             "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
             "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "Cool_NFT",
             "This is a coolish description",
             ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
             ["74", "97", "83", "96", "86"]
@@ -163,6 +172,7 @@ contract TestDynamicNFT is Test {
         dynamicNFT.mintNFT(
             "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
             "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "Cool_NFT",
             "This is a coolish description",
             ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
             ["74", "97", "83", "96", "86"]
