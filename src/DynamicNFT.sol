@@ -30,6 +30,12 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
         string tokenURI
     );
 
+    event NFTTransfer(
+        address indexed from,
+        address indexed to,
+        uint256 indexed tokenId
+    );
+
     event NFTBurned(address indexed minter, uint256 indexed tokenId);
 
     // Struct
@@ -73,8 +79,9 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
 
     constructor(
         string memory _name,
-        string memory _symbol
-    ) Ownable(msg.sender) ERC721(_name, _symbol) {}
+        string memory _symbol,
+        address _owner
+    ) Ownable(_owner) ERC721(_name, _symbol) {}
 
     function totalSupply() public view returns (uint256) {
         return _tokenIdCounter;
@@ -246,6 +253,8 @@ contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
         _removeFromOwnerTokens(from, tokenId);
 
         approve(to, tokenId);
+
+        emit NFTTransfer(from, to, tokenId);
     }
 
     // Helper function to remove token from owner's list

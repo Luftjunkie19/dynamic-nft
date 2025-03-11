@@ -18,7 +18,7 @@ contract TestDynamicNFT is Test {
 
     function setUp() public {
         deployer = new DeployDynamicNFT();
-        dynamicNFT = deployer.run();
+        (dynamicNFT, ) = deployer.run();
     }
 
     function testMintNFT() public {
