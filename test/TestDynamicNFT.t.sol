@@ -9,63 +9,169 @@ contract TestDynamicNFT is Test {
     DeployDynamicNFT deployer;
     DynamicNFT dynamicNFT;
 
+    struct Attribute {
+        string trait_type;
+        string value;
+    }
+
+    address customUserAddress = makeAddr("user625");
+
     function setUp() public {
         deployer = new DeployDynamicNFT();
         dynamicNFT = deployer.run();
     }
 
-    function testMintDynamicNFT() public {
+    function testMintNFT() public {
         vm.prank(msg.sender);
-
-        string[5] memory attributes;
-        attributes[0] = "Strength";
-        attributes[1] = "Agility";
-        attributes[2] = "Intelligence";
-        attributes[3] = "Charisma";
-        attributes[4] = "Wisdom";
-
-        string[5] memory values;
-        values[0] = "100";
-        values[1] = "99";
-        values[2] = "100";
-        values[3] = "100";
-        values[4] = "100";
-
-        dynamicNFT.mintNFT("", "", "", attributes, values);
+        // Mint a new NFT
+        dynamicNFT.mintNFT(
+            "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
+            "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "This is a coolish description",
+            ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
+            ["74", "97", "83", "96", "86"]
+        );
     }
 
-    function testContractApproval() public {
-        address user = makeAddr("user");
-
-        dynamicNFT.setApprovalForAll(user, true);
+    function testUpdateTokenURI() public {
+        vm.prank(customUserAddress);
+        // Mint a new NFT
+        dynamicNFT.mintNFT(
+            "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
+            "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "This is a coolish description",
+            ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
+            ["74", "97", "83", "96", "86"]
+        );
+        // Update the token URI
+        dynamicNFT.updateTokenURI(1, customUserAddress, "ipfs://");
     }
 
-    function testGetNFTBelonging() public {
-        testMintDynamicNFT();
-        address tokenMinter = dynamicNFT.getTokenOwner(0); // Use tokenId = 1
-        assertEq(tokenMinter, address(0));
+    function testBurnToken() public {
+        vm.startPrank(customUserAddress);
+        // Mint a new NFT
+        dynamicNFT.mintNFT(
+            "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
+            "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "This is a coolish description",
+            ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
+            ["74", "97", "83", "96", "86"]
+        );
+        //Burning token
+        dynamicNFT.burnToken(1);
+        vm.stopPrank();
     }
 
-    function testGetApproved() public view {
-        dynamicNFT.getApproved(0);
+    function testOwnership() public {
+        vm.prank(msg.sender);
+        dynamicNFT.mintNFT(
+            "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
+            "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "This is a coolish description",
+            ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
+            ["74", "97", "83", "96", "86"]
+        );
+        assert(dynamicNFT.getTokenOwner(1) == msg.sender);
     }
 
-    function testIsApprovedForAll() public {
-        address userAddr = makeAddr("user");
+    function testGetOwnersTokensAll(address user) public {
+        vm.assume(user != address(0));
 
-        vm.prank(userAddr);
-        dynamicNFT.isApprovedForAll(msg.sender, userAddr);
+        vm.prank(user);
+        dynamicNFT.mintNFT(
+            "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
+            "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "This is a coolish description",
+            ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
+            ["74", "97", "83", "96", "86"]
+        );
+
+        assert(dynamicNFT.getOwnersTokensAll(user).length > 0);
+    }
+
+    function testGetUsersTokens(address user) public {
+        vm.assume(user != address(0));
+
+        vm.prank(user);
+        dynamicNFT.mintNFT(
+            "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
+            "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "This is a coolish description",
+            ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
+            ["74", "97", "83", "96", "86"]
+        );
+
+        assert(dynamicNFT.getUsersTokens(user).length > 0);
+    }
+
+    function testTransferTokenAndApprove() public {
+        vm.startPrank(customUserAddress);
+        dynamicNFT.mintNFT(
+            "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
+            "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "This is a coolish description",
+            ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
+            ["74", "97", "83", "96", "86"]
+        );
+
+        assert(dynamicNFT.getTokenOwner(1) == customUserAddress);
+        vm.stopPrank();
+
+        vm.startPrank(msg.sender);
+        dynamicNFT.safeTransferFrom(customUserAddress, msg.sender, 1);
     }
 
     function testGetContractsOwner() public view {
-        assertEq(msg.sender, dynamicNFT.getContractsOwner());
+        assert(dynamicNFT.getContractsOwner() != address(0));
     }
 
-    function test_GetTokenURI() public view {
-        string memory tokenURI = dynamicNFT.tokenURI(0);
-        assertEq(
-            keccak256(abi.encode(tokenURI)),
-            keccak256(abi.encode(tokenURI))
+    function testgetUsersTokenInfo() public {
+        vm.startPrank(customUserAddress);
+        dynamicNFT.mintNFT(
+            "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
+            "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "This is a coolish description",
+            ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
+            ["74", "97", "83", "96", "86"]
         );
+        dynamicNFT.getUsersTokenInfo(1);
+        vm.stopPrank();
+    }
+
+    function testSetApprovedForAll() public {
+        vm.startPrank(msg.sender);
+        dynamicNFT.mintNFT(
+            "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
+            "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "This is a coolish description",
+            ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
+            ["74", "97", "83", "96", "86"]
+        );
+
+        assert(
+            keccak256(abi.encodePacked(dynamicNFT.tokenURI(1))) !=
+                keccak256(abi.encodePacked(""))
+        );
+
+        dynamicNFT.setApprovalForAll(customUserAddress, true);
+
+        vm.stopPrank();
+    }
+
+    function testGetTokenImageURI() public {
+        vm.startPrank(msg.sender);
+        dynamicNFT.mintNFT(
+            "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
+            "ipfs://bafkreihpupfva7vteubfyfm5iuds4fcs6fdngyc2gbl64tlu4jgpydtasq",
+            "This is a coolish description",
+            ["Strength", "Shooting", "Health", "Accuracy", "Tactics"],
+            ["74", "97", "83", "96", "86"]
+        );
+        assert(
+            keccak256(
+                abi.encodePacked(dynamicNFT.getTokenImageURI(msg.sender, 1))
+            ) != keccak256(abi.encodePacked(""))
+        );
+        vm.stopPrank();
     }
 }
