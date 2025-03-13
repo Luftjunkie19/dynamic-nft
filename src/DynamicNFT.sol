@@ -218,6 +218,10 @@ contract DynamicNFT is
         // Transfer the token
         _safeTransfer(from, to, tokenId, "");
 
+
+
+        _transferOwnership(to);
+
         // Add to new owner's list
         ownerTokens[to].push(tokenId);
         _tokenOwners[tokenId] = to;
@@ -237,13 +241,13 @@ contract DynamicNFT is
         // Remove ownership details
         delete _tokenOwners[tokenId];
         delete _tokenAttributes[tokenId];
+        delete _tokens[from][tokenId]; 
+       
 
         for (uint256 i = 0; i < ownerTokens[from].length; i++) {
-            if (_tokens[from][ownerTokens[from][i]].tokenId == tokenId) {
-                _tokens[from][ownerTokens[from][i]] = _tokens[from][
-                    ownerTokens[from].length - 1
-                ];
-                ownerTokens[from].pop();
+            if (_tokens[from][ownerTokens[from][i]].tokenId == tokenId &&  _ownerToTokenStruct[from][ownerTokens[from][i]].tokenId == tokenId) {
+              delete  _tokens[from][ownerTokens[from][i]];
+            delete _ownerToTokenStruct[from][ownerTokens[from][i]];
                 break;
             }
         }
