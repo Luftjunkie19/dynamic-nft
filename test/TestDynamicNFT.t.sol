@@ -38,6 +38,10 @@ contract TestDynamicNFT is Test {
         testMintNFT(customUserAddress);
         // Update the token URI
         dynamicNFT.updateTokenURI(1, customUserAddress, "ipfs://");
+        assert(
+            keccak256(abi.encodePacked(dynamicNFT.tokenURI(1))) ==
+                keccak256(abi.encodePacked("ipfs://"))
+        );
     }
 
     function testBurnToken() public {

@@ -7,7 +7,6 @@ import {Base64} from "../lib/openzeppelin-contracts/contracts/utils/Base64.sol";
 import {ERC721Burnable} from "../lib/openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import {IERC721} from "../lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 import {ReentrancyGuard} from "../lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
-import {PropertyCorrectnessCheckLib} from "../lib/Comparisons.sol";
 
 contract DynamicNFT is
     ERC721,
@@ -24,8 +23,6 @@ contract DynamicNFT is
     error DynamicNFT_NotElligibleToMint();
 
     error DynamicNFT_NotElligibleToUpdate(address minter, uint256 tokenId);
-
-    error DynamicNFT_EmptyOrNotFittingConditionsPropertyNameOrValue();
 
     //Events
     event NFTMinted(
@@ -119,9 +116,6 @@ contract DynamicNFT is
         return _operatorApprovals[_owner][operator];
     }
 
-    // Main function created to enable anyone to mint his own NFT.
-    using PropertyCorrectnessCheckLib for string;
-
     function mintNFT(
         address recipient,
         string memory _tokenURI,
@@ -134,20 +128,6 @@ contract DynamicNFT is
         _tokenIdCounter++;
         uint256 tokenId = _tokenIdCounter;
 
-        if (
-            !tokenName.checkIfNotEmptyStringAndMatchesRequirements(3, 25) ||
-            !description.checkIfNotEmptyStringAndMatchesRequirements(1, 300)
-        ) {
-            revert DynamicNFT_EmptyOrNotFittingConditionsPropertyNameOrValue();
-        }
-
-        if (
-            !_tokenURI.contains("ipfs://") ||
-            !_tokenImageURI.contains("ipfs://")
-        ) {
-            revert DynamicNFT_InvalidTokenURI();
-        }
-
         _safeMint(recipient, tokenId);
 
         _setTokenURI(tokenId, _tokenURI);
@@ -156,13 +136,6 @@ contract DynamicNFT is
         ownerTokens[recipient].push(tokenId);
 
         for (uint256 i = 0; i < keys.length; i++) {
-            if (
-                !keys[i].checkIfNotEmptyStringAndMatchesRequirements(1, 17) &&
-                !values[i].checkIfNotEmptyStringAndMatchesRequirements(0, 24)
-            ) {
-                revert DynamicNFT_EmptyOrNotFittingConditionsPropertyNameOrValue();
-            }
-
             _tokenAttributes[tokenId].push(Attribute(keys[i], values[i]));
         }
 

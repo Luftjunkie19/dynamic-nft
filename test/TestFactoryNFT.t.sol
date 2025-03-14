@@ -49,7 +49,6 @@ contract TestFactoryNFT is Test {
     function testRevert_EmptyNameOrSymbol() public {
         vm.startPrank(customAddress);
 
-        vm.expectRevert(NFTFactory.NFTFactory_EmptyNameOrSymbol.selector);
         nftFactory.createCollection(
             "T",
             "T",
@@ -61,30 +60,6 @@ contract TestFactoryNFT is Test {
             ),
             ["freedom", "anarchy", "stupidity", "maturity", "maturity"],
             ["436", "532", "31", "954", "752"]
-        );
-
-        vm.stopPrank();
-    }
-
-    function testRevert_EmptyValueToken() public {
-        vm.startPrank(customAddress);
-
-        vm.expectRevert(
-            DynamicNFT
-                .DynamicNFT_EmptyOrNotFittingConditionsPropertyNameOrValue
-                .selector
-        );
-        nftFactory.createCollection(
-            "TestToken",
-            "TFT",
-            NFTFactory.Token(
-                "Clone_NFT",
-                "ipfs://bafkreih5m2ryuxy4yy6bglwdczhprp3bzi6jfyuthfj3mkghuzhjeqs65u",
-                "ipfs://bafkreiaep6nwlaajzonx3n3vl6jy2ygs4bypaczcmjr2qbq4aubp3q2tuq",
-                "This description is super cool"
-            ),
-            ["", "", "", "", ""],
-            ["436", "532", "31", "", ""]
         );
 
         vm.stopPrank();

@@ -2,11 +2,8 @@
 pragma solidity ^0.8.24;
 
 import {DynamicNFT} from "../src/DynamicNFT.sol";
-import {PropertyCorrectnessCheckLib} from "../lib/Comparisons.sol";
 
 contract NFTFactory {
-    error NFTFactory_EmptyNameOrSymbol();
-
     event CollectionCreated(
         address indexed owner,
         string name,
@@ -14,7 +11,6 @@ contract NFTFactory {
         address indexed collectionAddress
     );
 
-    using PropertyCorrectnessCheckLib for string;
     // Struct
 
     struct Token {
@@ -33,13 +29,6 @@ contract NFTFactory {
         string[5] memory traitsTypes,
         string[5] memory values
     ) external {
-        if (
-            !name.checkIfNotEmptyStringAndMatchesRequirements(2, 25) ||
-            !symbol.checkIfNotEmptyStringAndMatchesRequirements(2, 7)
-        ) {
-            revert NFTFactory_EmptyNameOrSymbol();
-        }
-
         // Create collection and update state BEFORE minting to avoid reentrancy
         DynamicNFT newCollection = new DynamicNFT(name, symbol, msg.sender);
 
