@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-
 import {ERC721} from "../lib/openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
 import {ERC721URIStorage} from "../lib/openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import {Ownable} from "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import {Base64} from "../lib/openzeppelin-contracts/contracts/utils/Base64.sol";
-import {console} from "../lib/forge-std/src/Console.sol";
 import {ERC721Burnable} from "../lib/openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import {IERC721} from "../lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 import {ReentrancyGuard} from "../lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
@@ -23,7 +21,7 @@ contract DynamicNFT is
 
     error DynamicNFT_InvalidTokenURI();
 
-    error DynamicNFT_NotElligibleToMint(address minter);
+    error DynamicNFT_NotElligibleToMint();
 
     error DynamicNFT_NotElligibleToUpdate(address minter, uint256 tokenId);
 
@@ -71,11 +69,11 @@ contract DynamicNFT is
 
     mapping(uint256 => address) public _tokenOwners; // Which user owns which NFT?
 
-    mapping(address => uint256[]) public ownerTokens; // List of tokens owned by a user
+    mapping(address => uint256[]) private ownerTokens; // List of tokens owned by a user
 
-    mapping(address => mapping(uint256 => Token)) public _tokens;
+    mapping(address => mapping(uint256 => Token)) private _tokens;
 
-    mapping(address => Token[]) public _ownerToTokenStruct;
+    mapping(address => Token[]) private _ownerToTokenStruct;
 
     mapping(address => mapping(address => bool)) public _operatorApprovals;
 
@@ -90,16 +88,17 @@ contract DynamicNFT is
     ) Ownable(_owner) ERC721(_name, _symbol) {}
 
     // Checking functions and modifiers for proving noone not-allowed is calling the functions.
-    modifier isElligible(address minter) {
-        if (minter == address(0)) {
-            revert DynamicNFT_NotElligibleToMint(minter);
-        }
-        _;
-    }
 
     modifier isElligibleToUpdate(address minter, uint256 tokenId) {
         if (getTokenOwner(tokenId) != minter && minter != address(0)) {
             revert DynamicNFT_NotElligibleToUpdate(minter, tokenId);
+        }
+        _;
+    }
+
+    modifier isElligible(address minter) {
+        if (minter == address(0)) {
+            revert DynamicNFT_NotElligibleToMint();
         }
         _;
     }
@@ -195,10 +194,6 @@ contract DynamicNFT is
         return ownerOf(tokenId);
     }
 
-    function totalSupply() public view returns (uint256) {
-        return _tokenIdCounter;
-    }
-
     function getOwnersTokensAll(
         address user
     ) public view returns (Token[] memory) {
@@ -218,10 +213,7 @@ contract DynamicNFT is
         // Transfer the token
         _safeTransfer(from, to, tokenId, "");
 
-
-
-        _transferOwnership(to);
-
+        approve(to, tokenId);
         // Add to new owner's list
         ownerTokens[to].push(tokenId);
         _tokenOwners[tokenId] = to;
@@ -229,25 +221,30 @@ contract DynamicNFT is
         _tokens[to][tokenId] = _tokens[from][tokenId];
 
         // Remove from the old owner's token list
-        _removeFromOwnerTokens(from, tokenId);
-
-        approve(to, tokenId);
+        _removeFromOwnerToken(from, tokenId);
 
         emit NFTTransfer(from, to, tokenId);
     }
 
     // Helper function to remove token from owner's list
-    function _removeFromOwnerTokens(address from, uint256 tokenId) internal {
+    function _removeFromOwnerToken(address from, uint256 tokenId) internal {
         // Remove ownership details
         delete _tokenOwners[tokenId];
         delete _tokenAttributes[tokenId];
-        delete _tokens[from][tokenId]; 
-       
+        delete _tokens[from][tokenId];
 
-        for (uint256 i = 0; i < ownerTokens[from].length; i++) {
-            if (_tokens[from][ownerTokens[from][i]].tokenId == tokenId &&  _ownerToTokenStruct[from][ownerTokens[from][i]].tokenId == tokenId) {
-              delete  _tokens[from][ownerTokens[from][i]];
-            delete _ownerToTokenStruct[from][ownerTokens[from][i]];
+        // Remove tokenId from ownerTokens array
+        uint256 length = ownerTokens[from].length;
+        Token[] storage tokens = _ownerToTokenStruct[from];
+        for (uint256 i = 0; i < length; i++) {
+            if (
+                ownerTokens[from][i] == tokenId && tokens[i].tokenId == tokenId
+            ) {
+                ownerTokens[from][i] = ownerTokens[from][length - 1]; // Move last element to deleted spot
+                ownerTokens[from].pop(); // Remove last element
+                tokens[i] = tokens[tokens.length - 1]; // Move last element to deleted spot
+                tokens.pop(); // Remove last element
+
                 break;
             }
         }
@@ -261,11 +258,8 @@ contract DynamicNFT is
         address tokenOwner = ownerOf(tokenId);
 
         // Ensure only the owner or an approved operator can approve a new address
-        if (
-            msg.sender != tokenOwner &&
-            !isApprovedForAll(tokenOwner, msg.sender)
-        ) {
-            revert NotTokenOwner(msg.sender);
+        if (to != tokenOwner && !isApprovedForAll(tokenOwner, to)) {
+            revert NotTokenOwner(to);
         }
 
         // Approve `to` to transfer the token
@@ -324,7 +318,7 @@ contract DynamicNFT is
     ) external isElligibleToUpdate(msg.sender, tokenId) {
         // Remove from owner mappings
         address tokenOwner = ownerOf(tokenId);
-        _removeFromOwnerTokens(tokenOwner, tokenId);
+        _removeFromOwnerToken(tokenOwner, tokenId);
 
         _burn(tokenId);
 

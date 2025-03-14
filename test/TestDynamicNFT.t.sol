@@ -22,6 +22,7 @@ contract TestDynamicNFT is Test {
     }
 
     function testMintNFT(address caller) public {
+        vm.assume(caller != address(0));
         dynamicNFT.mintNFT(
             caller,
             "ipfs://bafkreibc53zyfwu7n74gk734bed37jc5x3lrdikmc2gdmxhvztxsgvcv3a",
@@ -44,6 +45,8 @@ contract TestDynamicNFT is Test {
         //Burning token
         vm.startPrank(customUserAddress);
         dynamicNFT.burnToken(1);
+
+        assert(dynamicNFT.getOwnersTokensAll(customUserAddress).length == 0);
         vm.stopPrank();
     }
 
@@ -56,7 +59,8 @@ contract TestDynamicNFT is Test {
         vm.assume(user != address(0));
 
         testMintNFT(user);
-        vm.prank(user);
+
+        assert(dynamicNFT.getOwnersTokensAll(customUserAddress).length == 0);
         assert(dynamicNFT.getOwnersTokensAll(user).length > 0);
     }
 
@@ -80,5 +84,12 @@ contract TestDynamicNFT is Test {
         vm.prank(msg.sender);
 
         dynamicNFT.setApprovalForAll(customUserAddress, true);
+    }
+
+    function testCheckIfTokenRemovedAfterTransfer() public {
+        testMintNFT(customUserAddress);
+        dynamicNFT.safeTransferFrom(customUserAddress, msg.sender, 1);
+
+        assert(dynamicNFT.getOwnersTokensAll(customUserAddress).length == 0);
     }
 }
