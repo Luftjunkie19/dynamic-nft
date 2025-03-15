@@ -141,10 +141,10 @@ contract DynamicNFT is
 
         _tokens[recipient][tokenId] = Token(
             tokenId,
+            tokenName,
             _tokenURI,
             _tokenImageURI,
             description,
-            tokenName,
             _tokenAttributes[tokenId]
         );
 
