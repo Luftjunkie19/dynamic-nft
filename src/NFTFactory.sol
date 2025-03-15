@@ -43,8 +43,8 @@ contract NFTFactory {
 
         newCollection.mintNFT(
             msg.sender,
-            token.tokenImageURI,
             token.tokenURI,
+            token.tokenImageURI,
             token.tokenName,
             token.description,
             traitsTypes,

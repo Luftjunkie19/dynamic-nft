@@ -6,15 +6,8 @@ import {Ownable} from "../lib/openzeppelin-contracts/contracts/access/Ownable.so
 import {Base64} from "../lib/openzeppelin-contracts/contracts/utils/Base64.sol";
 import {ERC721Burnable} from "../lib/openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import {IERC721} from "../lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
-import {ReentrancyGuard} from "../lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
 
-contract DynamicNFT is
-    ERC721,
-    Ownable,
-    ERC721URIStorage,
-    ERC721Burnable,
-    ReentrancyGuard
-{
+contract DynamicNFT is ERC721, Ownable, ERC721URIStorage, ERC721Burnable {
     //Errors
     error NotTokenOwner(address tokenOwner);
 
@@ -124,7 +117,7 @@ contract DynamicNFT is
         string memory description,
         string[5] memory keys,
         string[5] memory values
-    ) external nonReentrant isElligible(recipient) {
+    ) external isElligible(recipient) {
         _tokenIdCounter++;
         uint256 tokenId = _tokenIdCounter;
 
