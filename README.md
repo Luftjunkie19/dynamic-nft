@@ -31,7 +31,7 @@ This function takes 5 parameters besides, the obvious ones, I'd like to clarify 
 It's been done this way because solidity cannot implicitly add the struct array.
 
 The function is responsible for as the name says **MINTING** 🤯. But besides it, it also manages adding the NFT to mappings like:
-```
+```solidity
     mapping(uint256 => address) private _tokenOwners; // Which user owns which NFT Token ?
 
     mapping(address => uint256[]) private ownerTokens; // List of token addressed owned by a user.
@@ -41,7 +41,7 @@ The function is responsible for as the name says **MINTING** 🤯. But besides i
 // to the address of the owner.
 ```
 
-```
+```solidity
  // NFT Ownership State Management Functions (Transfer, Burn, Etc.)
     function safeTransferFrom(
         address from,
@@ -52,13 +52,13 @@ The function is responsible for as the name says **MINTING** 🤯. But besides i
 ```
 It manages removing the data from the current owner, assigning to a new one and getting rid of the token from current owner's account.
 
-```
+```solidity
   // Helper function to remove token from owner's list
     function _removeFromOwnerToken(address from, uint256 tokenId) internal {
     }
 ```
 This function includes for loop to get rid of certain items in mapping's array and also deletes certain key-value pair from mappings.
-```
+```solidity
 // Updates the URI of the token
     function updateTokenURI(
         uint256 tokenId,
@@ -69,7 +69,7 @@ This function includes for loop to get rid of certain items in mapping's array a
 ```
 It set's the tokenURI to a new one and updates the mappings.
 
-```
+```solidity
     function burnToken(
         uint256 tokenId
     ) external isElligibleToUpdate(msg.sender, tokenId) {
